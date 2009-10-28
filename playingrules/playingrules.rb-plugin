@@ -1,0 +1,9 @@
+[RB Plugin]
+Loader=python
+Module=playingrules
+IAge=1
+Name=Playing rules
+Description=Create rules
+Authors=Dariusz Ciemięga <cdar07@gmail.com>
+Copyright=Copyright © 2007 Dariusz Ciemięga
+Website=https://launchpad.net/~cdar07

@@ -1,0 +1,297 @@
+<html><head>
+	
+		<title>Feedly, your magazine-like start page</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+		<script>
+		function readCookie(name) {
+			var nameEQ = name + "=";
+			var ca = document.cookie.split(';');
+			for(var i=0;i < ca.length;i++) {
+				var c = ca[i];
+				while (c.charAt(0)==' ') c = c.substring(1,c.length);
+				if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+			}
+			return null;
+		}
+
+		// get the feedly app version cookie
+		var feedlyAppVersion = readCookie( "feedlyVersion" );
+		
+		var baseURL = "";
+		if( feedlyAppVersion == null )
+	   		baseURL = "http://s3.feedly.com/production/@@@/";
+		else
+   			baseURL = "http://s3.feedly.com/production/" + feedlyAppVersion + "/";
+		
+		document.write( "<base href='" + baseURL + "'></base>");
+		
+		function cancelEventPropagation( e ) 
+		{
+			if( e == null )
+				return false;
+
+			if( e.stopPropagation ) 
+			{
+				e.stopPropagation()
+				e.preventDefault()
+			}	
+		}
+		
+		if (!this.JSON) {
+		    JSON = function () {
+
+		        function f(n) {
+		            // Format integers to have at least two digits.
+		            return n < 10 ? '0' + n : n;
+		        }
+
+		        Date.prototype.toJSON = function (key) {
+
+		            return this.getUTCFullYear()   + '-' +
+		                 f(this.getUTCMonth() + 1) + '-' +
+		                 f(this.getUTCDate())      + 'T' +
+		                 f(this.getUTCHours())     + ':' +
+		                 f(this.getUTCMinutes())   + ':' +
+		                 f(this.getUTCSeconds())   + 'Z';
+		        };
+
+		        String.prototype.toJSON =
+		        Number.prototype.toJSON =
+		        Boolean.prototype.toJSON = function (key) {
+		            return this.valueOf();
+		        };
+
+		        var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+		            escapeable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+		            gap,
+		            indent,
+		            meta = {    // table of character substitutions
+		                '\b': '\\b',
+		                '\t': '\\t',
+		                '\n': '\\n',
+		                '\f': '\\f',
+		                '\r': '\\r',
+		                '"' : '\\"',
+		                '\\': '\\\\'
+		            },
+		            rep;
+
+
+		        function quote(string) {
+		            escapeable.lastIndex = 0;
+		            return escapeable.test(string) ?
+		                '"' + string.replace(escapeable, function (a) {
+		                    var c = meta[a];
+		                    if (typeof c === 'string') {
+		                        return c;
+		                    }
+		                    return '\\u' + ('0000' +
+		                            (+(a.charCodeAt(0))).toString(16)).slice(-4);
+		                }) + '"' :
+		                '"' + string + '"';
+		        }
+
+
+		        function str(key, holder) {
+
+		// Produce a string from holder[key].
+
+		            var i,          // The loop counter.
+		                k,          // The member key.
+		                v,          // The member value.
+		                length,
+		                mind = gap,
+		                partial,
+		                value = holder[key];
+
+		// If the value has a toJSON method, call it to obtain a replacement value.
+
+		            if (value && typeof value === 'object' &&
+		                    typeof value.toJSON === 'function') {
+		                value = value.toJSON(key);
+		            }
+
+		// If we were called with a replacer function, then call the replacer to
+		// obtain a replacement value.
+
+		            if (typeof rep === 'function') {
+		                value = rep.call(holder, key, value);
+		            }
+		            switch (typeof value) {
+		            case 'string':
+		                return quote(value);
+
+		            case 'number':
+		                return isFinite(value) ? String(value) : 'null';
+
+		            case 'boolean':
+		            case 'null':
+		                return String(value);
+		            case 'object':
+		                if (!value) {
+		                    return 'null';
+		                }
+		                gap += indent;
+		                partial = [];
+		                if (typeof value.length === 'number' &&
+		                        !(value.propertyIsEnumerable('length'))) {
+
+		                    length = value.length;
+		                    for (i = 0; i < length; i += 1) {
+		                        partial[i] = str(i, value) || 'null';
+		                    }
+		                    v = partial.length === 0 ? '[]' :
+		                        gap ? '[\n' + gap +
+		                                partial.join(',\n' + gap) + '\n' +
+		                                    mind + ']' :
+		                              '[' + partial.join(',') + ']';
+		                    gap = mind;
+		                    return v;
+		                }
+
+		                if (rep && typeof rep === 'object') {
+		                    length = rep.length;
+		                    for (i = 0; i < length; i += 1) {
+		                        k = rep[i];
+		                        if (typeof k === 'string') {
+		                            v = str(k, value, rep);
+		                            if (v) {
+		                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
+		                            }
+		                        }
+		                    }
+		                } else {
+		                    for (k in value) {
+		                        if (Object.hasOwnProperty.call(value, k)) {
+		                            v = str(k, value, rep);
+		                            if (v) {
+		                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
+		                            }
+		                        }
+		                    }
+		                }
+
+		                v = partial.length === 0 ? '{}' :
+		                    gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+		                            mind + '}' : '{' + partial.join(',') + '}';
+		                gap = mind;
+		                return v;
+		            }
+		        }
+
+		        return {
+		            stringify: function (value, replacer, space) {
+		                var i;
+		                gap = '';
+		                indent = '';
+
+		                if (typeof space === 'number') {
+		                    for (i = 0; i < space; i += 1) {
+		                        indent += ' ';
+		                    }
+		                } else if (typeof space === 'string') {
+		                    indent = space;
+		                }
+
+		                rep = replacer;
+		                if (replacer && typeof replacer !== 'function' &&
+		                        (typeof replacer !== 'object' ||
+		                         typeof replacer.length !== 'number')) {
+		                    throw new Error('JSON.stringify');
+		                }
+
+		                return str('', {'': value});
+		            },
+		        };
+		    }();
+		}
+
+
+			function createProxy( pId )
+			{
+				var that = {};
+				
+				var proxyId = pId;
+				
+				that.__noSuchMethod__ = function()
+				{
+					var args =  arguments[ 1 ] || [];
+										
+					var msg = { rotId: proxyId, method: arguments[ 0 ], arguments: args }
+					window.postMessage( JSON.stringify( msg ), "http://www.feedly.com" );
+					return false;
+				};
+				
+				return that;
+			}
+		
+			Element.prototype.$controller = function( )
+			{
+				if( this.getAttribute( "_controllerId" ) != null )
+					return createProxy(  this.getAttribute( "_controllerId" ) );
+				else
+				{
+					var p = this.parentNode;
+					if( p != null && this.parentNode.$controller )
+						return p.$controller();
+					else
+					{
+						alert( "control not found" );
+						return null;
+					}
+				}	
+			}
+
+			Element.prototype.$app = function( )
+			{
+				if( this.getAttribute( "_appId" ) != null )
+					return createProxy(  this.getAttribute( "_appId" ) );
+				else
+				{
+					var p = this.parentNode;
+					if( p != null && this.parentNode.$app )
+						return p.$app();
+					else
+					{
+						alert( "application not found" );
+						return null;
+					}
+				}	
+			}
+
+			Element.prototype.$module = function( )
+			{
+				if( this.getAttribute( "_moduleId" ) != null )
+					return createProxy(  this.getAttribute( "_moduleId" ) );
+				else
+				{
+					var p = this.parentNode;
+					if( p != null && this.parentNode.$module )
+						return p.$module();
+					else
+					{
+						alert( "module not found" );
+						return null;
+					}
+				}	
+			}
+
+			Element.prototype.$page = function( )
+			{
+				if( this.getAttribute( "_pageId" ) != null )
+					return createProxy(  this.getAttribute( "_pageId" ) );
+				else
+				{
+					var p = this.parentNode;
+					if( p != null && this.parentNode.$page )
+						return p.$page();
+					else
+					{
+						alert( "page not found" );
+						return null;
+					}
+				}	
+			}
+		</script><!-- base href="http://s3.feedly.com/production/2.x.099/" -->
+	<style> BODY { margin:0px; font-family: sans-serif; font-size: 12px; } /***************************/ /**** Completion ***********/ /***************************/ #completionDropDown { position: absolute; background-color: #ffffff; border: 1px solid #444444; display: none; font-size: 13px; cursor: pointer; padding: 2px; z-index: 99900; } #completionDropDown .entry { border: 1px solid #FFFFFF; padding-top: 2px; color: #222222; font: inherit; } #completionDropDown .selected { border: 1px solid #444444; padding-top: 2px; color: #FFFFFF; background-color: #444444; } #completionDropDown span.bold { font-weight: normal; color: #319BFC; } #completionDropDown .selected span.bold { font-weight: bold; color: #319BFC; } .unread { color: #075FB2; font-weight: bold; } .read { color:#505050; font-weight:bold; } #explore .read { color: #075FB2; font-weight: bold; } .hot { color: inherit; } .nonEmpty { color: #075FB2; font-weight: normal; } .empty { color: #075FB2; font-weight: normal; } .metadata { color: #808080; line-height: 17px; } /****** FORMS *************************************************/ .formContainer { padding: 15px; padding-left: 85px; background-color: #c3dcf0; border: 1px solid #99b4d0; -moz-border-radius: 10px; -webkit-border-radius: 10px; } .inlineFormContainer { font-size: 10pt; padding-left: 11px; padding-right: 11px; background-color: #c3dcf0; border: 1px solid #99b4d0; margin-top: 8px; margin-bottom: 8px; -moz-border-radius: 5px; -webkit-border-radius: 5px; } .inlineFormContainer .msgSize { font-size: 22pt; font-family: 'Georgia','Serif'; color:#1a3f7a; font-weight: bold; padding-top: 5px; } .formContainer h1 { font-size: 18px; font-weight: normal; color:#1a3f7a; margin-top: 15px; margin-bottom: 15px; text-transform: none; padding-left:0px; } .inlineFormContainer h1 { font-size: 12px; font-weight: bold; color:#1a3f7a; margin-top: 2px; margin-bottom: 6px; text-transform: none; padding-left: 0px; padding-top: 10px; height: auto; } .narrow .inlineFormContainer h1 { font-size: 12px; font-weight: bold; color:#1a3f7a; margin-top: 2px; margin-bottom: 6px; text-transform: none; padding-left: 0px; padding-top: 10px; height: auto; } .panelSending { padding: 5px; border: 1px solid #DCDCDC; background-color: #F0F0F0; font-size: 13px; color: #666; margin-top: 12px; } #formErrorMsg { font-size: 12px; margin-right: 70px; border: 1px dotted #930505; background-color: #fbe0e0; padding: 10px; color: #930505; } #formWaitMsg { font-size: 12px; margin-right: 70px; padding: 10px; color: #333333; } .inlineFormContainer .formErrorMsg { font-size: 12px; border: 1px dotted #930505; background-color: #fbe0e0; padding: 10px; color: #930505; } .fieldSet { margin-top: 15px; margin-bottom: 15px; } .fieldLabel { font-size: 12px; font-weight: bold; color:#1a3f7a; } .fieldHint { font-size: 12px; color:#5f7c9d; } .labelGroup { margin-bottom: 3px; } .staticValue, .checkboxLabel { font-size: 12px; color: #000000; } .staticValue a { font-size: 12px; color: #000000; text-decoration:none; } .staticValue a:hover { font-size: 12px; color: #000000; text-decoration:underline; } .checkboxField { margin-top: 2px; margin-bottom: 2px; cursor: pointer; -moz-user-select: none; } .textValue { font-size: 12px; margin: 1px; border: 1px solid #99b4d0; background-color: #e6eef6; padding: 3px; } .textValue:focus { margin: 0px; border: 2px solid #5f7c9d; background-color: #FFFFFF; } .fileValue { font-size: 12px; margin: 1px; border: 1px solid #99b4d0; background-color: #e6eef6; padding: 3px; } .fileValueFocused { font-size: 12px; margin: 0px; border: 2px solid #5f7c9d; background-color: #FFFFFF; padding: 3px; } .textareaValue { font-size: 12px; margin: 1px; border: 1px solid #99b4d0; background-color: #e6eef6; padding: 3px; overflow-x: hidden; } .textareaValue:focus { margin: 0px; border: 2px solid #5f7c9d; background-color: #FFFFFF; } .textareaValueFocused { font-size: 12px; margin: 0px; border: 2px solid #5f7c9d; background-color: #FFFFFF; padding: 3px; } .checkboxLabelValue { font-size: 12px; border: 1px solid #99b4d0; background-color: #e6eef6; padding: 3px; } .formContainer .actions { text-align: right; margin-top: 15px; height:27px; } .transparentFormContainer .actions,.inlineFormContainer .actions { text-align: right; margin-top: 10px; margin-bottom: 10px; height:27px; } .formContainer .actionButton, .inlineFormContainer .actionButton { width:90px; height:25px; border: 0px; background-image: url( images/button-background.png ); background-repeat: no-repeat; font-size: 12px; font-weight: normal; color:#1a3f7a; text-align:center; overflow-x:hidden; overflow-y:hidden; margin-left: 4px; cursor: pointer; float:right; } .formContainer .secondaryActionLink, .inlineFormContainer .secondaryActionLink, .transparentFormContainer .secondaryActionLink { color:red; text-decoration: underline; padding-left: 5px; } .formContainer .secondaryActionButton, .inlineFormContainer .secondaryActionButton { height:27px; border: 0px; font-size: 12px; font-weight: normal; color:#AAAAAA; text-align:center; overflow-x:hidden; overflow-y:hidden; padding-top:6px; margin-left: 6px; margin-left: 6px; cursor: pointer; float:right; } .transparentFormContainer .actionButton { width:90px; height:25px; border: 0px; background-image: url( images/button-background.png ); background-repeat: no-repeat; font-size: 12px; font-weight: normal; color:#1a3f7a; text-align:center; overflow-x:hidden; overflow-y:hidden; margin-right: 4px; cursor: pointer; float:left; } .transparentFormContainer .secondaryActionButton { height:27px; border: 0px; font-size: 12px; font-weight: normal; color:#AAAAAA; text-align:center; overflow-x:hidden; overflow-y:hidden; padding-top:6px; margin-left: 6px; margin-right: 6px; cursor: pointer; float:left; } </style><style> html { overflow-y: hidden !important; } BODY.mini { line-height: 24px; } .widget { border: 1px solid #909090; height: 518px; background-color: #FFFFFF; } a { color: #075FB2; } .action { color: #075FB2; text-decoration:none; cursor: pointer; } .action:hover { text-decoration:underline; } .miniBar { border-top: 1px solid #c7d1d7; border-left: 1px solid #c7d1d7; border-bottom: 1px solid #c7d1d7; background-color: #dee8f5; width: 24px; color: #547596; } .miniBar .actions { background-color: #FFFFFF; } .miniBar .actions img { border: 0px; padding-left: 4px; padding-right: 4px; padding-bottom: 4px; } .miniBar .actions { font-size: 12px; line-height: 24px; } .miniBar #hide { text-align: center; cursor: pointer; } .miniBar #hide img { padding: 0px; border: 0px; } /**** POPUP RELATED STYLES ****/ .popup { border: 1px solid #c7d1d7; background-color: #dee8f5; padding: 10px; overflow: hidden; } .popup .label { line-height: 12px; color: #AAAAAA; } .popup .label b { line-height: 12px; color: #777777; } .popup a { color: #7695b9; text-decoration: none; } .suggestion { float:left; line-height: 12px; padding-left: 7px; padding-right: 7px; padding-top: 4px; padding-bottom: 5px; margin-top: 10px; margin-right: 10px; background-color:#fffdd3; border:1px solid #D3E097; color:#5A552E; cursor: pointer; -moz-border-radius:12px; -webkit-border-radius:12px; } #counter { color: #AAAAAA; font-size: 11px; max-width: 35px; width: 35px; background-color: #FFFFFF; line-height:24px; text-align:center; } .popup .message { color:#666666; line-height:17px } #hidePopup { float:right; cursor: pointer; margin-right:-10px; margin-top:-10px; } .mini .metadata { font-size: 11px; } .entry { margin-bottom: 12px; line-height: 17px; margin-left: 25px; } .entry a { color: #075FB2; } </style></head><body
+ id="box" class="mini"></body></html>
